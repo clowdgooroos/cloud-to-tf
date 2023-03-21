@@ -1,11 +1,28 @@
 import os
 import requests
 import json
+import jinja2
 from base64 import b64encode, b64decode
 import os
 from pathlib import Path
 
 from utilities import aes
+
+def render_template(template_path: Path, data: dict) -> str:
+    
+    template_parent_path = str(template_path.parent.absolute())
+    
+    template_loader = jinja2.FileSystemLoader(searchpath=template_parent_path)
+    template_env = jinja2.Environment(loader=template_loader)
+        
+    
+    template_path = str(template_path)
+    template = template_env.get_template(template_path.name)
+    
+    rendered_template = template.render(data)
+    
+    return rendered_template
+    
 
 def log_output(func):
     
