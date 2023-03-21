@@ -6,6 +6,9 @@ Shift left cloud resource generation via terraform automation and leverage and t
 
 ## Usage
 
+```bash
+python3 ./main.py 
+```
 
 
 ## Credits
