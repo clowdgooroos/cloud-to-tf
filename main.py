@@ -35,8 +35,8 @@ def main():
     
     # Set up the parser
     parser = argparse.ArgumentParser(description='A tool for reversing AWS resources into Terraform code')
-    parser.add_argument('-r', '--region', type=str, help='Region to pull data from')
-    parser.add_argument('-o', '--output', type=str, help='Output file for TF code')
+    parser.add_argument('-r', '--region', type=str, required=True, help='Region to pull data from')
+    parser.add_argument('-o', '--output', type=str, required=True, help='Output file for TF code')
     args = parser.parse_args()
     
     # Parse the args
@@ -52,7 +52,9 @@ def main():
     if security_groups:
         for group in security_groups:
             rendered_tf += security_group_to_terraform(group)
+            rendered_tf += "\n"
     
+    rendered_tf.replace("\n\n", "")
     output_file.write_text(rendered_tf)
     
 
