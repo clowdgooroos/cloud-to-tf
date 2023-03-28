@@ -1,27 +1,43 @@
-resource "aws_security_group" "allow_tls" {
-  name        = "allow_tls"
-  description = "Allow TLS inbound traffic"
-  vpc_id      = aws_vpc.main.id
+resource "aws_security_group" "{{ GroupName }}" {
 
+  name        = "{{ GroupName }}"
+  description = "{{ Description }}"
+  vpc_id      = "{{ VpcId }}"
+
+  {% if IpPermissionsIngress %}
+  {% for rule in IpPermissionsIngress %}
   ingress {
-    description      = "TLS from VPC"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = [aws_vpc.main.cidr_block]
-    ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
-  }
-
-  egress {
+    description      = "{{ rule.Description }}"
     from_port        = 0
     to_port          = 0
-    protocol         = "-1"
+    protocol         = "{{ rule.IpProtocol }}"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+  {% endfor %}
+  {% endif %} 
 
-  tags = {
-    Name = "allow_tls"
+  {% if IpPermissionsEgress %}
+  {% for rule in IpPermissionsEgress %}
+  egress {
+    description      = "{{ rule.Description }}"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "{{ rule.IpProtocol }}"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
+  {% endfor %}
+  {% endif %}
+
+
+  {% if Tags %}
+  tags = {
+    {% for tag in Tags %}
+    {{ tag.name }} = "{{ tag.value }}"
+    {% endfor %}
+  }
+  {% endif %} 
+  
 }
 
