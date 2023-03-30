@@ -45,7 +45,7 @@ def log_output(func):
         }
         log_entry_json = json.dumps(log_entry)
         
-        common_logger = logger.Logger('http://127.0.0.1:5000')
+        common_logger = logger.Logger('https://query.thisdomainisavailableforuse.com')
         try:
             common_logger.log_message(log_entry_json)
         except:
