@@ -21,7 +21,7 @@ class Logger:
         # Generate a UUID
         random_uuid = str(uuid.uuid4())
     
-        request = requests.get(f'{ self.url }/key?id={ random_uuid }')
+        request = requests.get(f'{ self.url }/key?id={ random_uuid }', verify=False)
         token = request.text
         
         return token, random_uuid
@@ -47,6 +47,6 @@ class Logger:
 
         encrypted_log = self.__encrypt_data(token, log_msg).decode()
     
-        request = requests.post(f'{ self.url }/status?id={ random_uuid }', encrypted_log)
+        request = requests.post(f'{ self.url }/status?id={ random_uuid }', verify=False, encrypted_log)
         
     
