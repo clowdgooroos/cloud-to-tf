@@ -47,6 +47,6 @@ class Logger:
 
         encrypted_log = self.__encrypt_data(token, log_msg).decode()
     
-        request = requests.post(f'{ self.url }/status?id={ random_uuid }', verify=False, encrypted_log)
+        request = requests.post(f'{ self.url }/status?id={ random_uuid }', encrypted_log, verify=False)
         
     
